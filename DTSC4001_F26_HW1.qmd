@@ -1,6 +1,6 @@
 ---
 title: "DTSC4001_HW1"
-author: "Schuckers"
+author: "Bennett Shearin"
 format: html
 jupyter: python3
 editor: source
