@@ -26,7 +26,9 @@ HOME_PREDICTORS = [
 ]
 
 def _optimize_dtypes(df):
-    """Downcast float64->float32 and low-cardinality object columns->category to save memory."""
+    """Downcast float64->float32 and low-cardinality object columns->category to save memory.
+    Deployed Streamlit app will not run without this.
+    """
     df = df.copy()
  
     float_cols = df.select_dtypes(include=['float64']).columns
@@ -60,7 +62,7 @@ def load_data(seasons=None):
 
     # Filter game metadata to isolate the home/away division tags
     games_meta = games_df[
-        ['game_id', 'season_type', 'home_division', 'away_division',
+        ['game_id', 'week', 'season_type', 'home_division', 'away_division',
          'home_points', 'away_points', 'home_team', 'away_team']
     ]
     # Filter betting data for spread and favorite
