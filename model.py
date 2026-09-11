@@ -25,6 +25,19 @@ HOME_PREDICTORS = [
     "start.is_home", "home_team_spread",
 ]
 
+def _optimize_dtypes(df):
+    """Downcast float64->float32 and low-cardinality object columns->category to save memory."""
+    df = df.copy()
+ 
+    float_cols = df.select_dtypes(include=['float64']).columns
+    df[float_cols] = df[float_cols].astype('float32')
+ 
+    object_cols = df.select_dtypes(include=['object']).columns
+    for col in object_cols:
+        if df[col].nunique() < 100:
+            df[col] = df[col].astype('category')
+ 
+    return df
 
 def load_data(seasons=None):
     """Load and merge play-by-play, schedule, and betting data for the given seasons"""
@@ -43,8 +56,8 @@ def load_data(seasons=None):
     betting_df = betting_df_polars.to_pandas(use_pyarrow_extension_array=False)
 
     keep_cols = ['game_id', 'season'] + HOME_PREDICTORS
-    pbp_raw[[c for c in keep_cols if c in pbp_raw.columns]]
-    
+    pbp_raw = pbp_raw[[c for c in keep_cols if c in pbp_raw.columns]]
+
     # Filter game metadata to isolate the home/away division tags
     games_meta = games_df[
         ['game_id', 'season_type', 'home_division', 'away_division',
@@ -67,6 +80,9 @@ def load_data(seasons=None):
 
     # only games where home_win and predictors aren't missing
     fbs_pbp = fbs_pbp.dropna(subset=["home_win"] + HOME_PREDICTORS)
+
+    # downcast dtypes to cut memory for Streamlit
+    fbs_pbp = _optimize_dtypes(fbs_pbp)
 
     return fbs_pbp
 
