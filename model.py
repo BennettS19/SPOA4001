@@ -42,6 +42,9 @@ def load_data(seasons=None):
     games_df = games_df_polars.to_pandas(use_pyarrow_extension_array=False)
     betting_df = betting_df_polars.to_pandas(use_pyarrow_extension_array=False)
 
+    keep_cols = ['game_id', 'season'] + HOME_PREDICTORS
+    pbp_raw[[c for c in keep_cols if c in pbp_raw.columns]]
+    
     # Filter game metadata to isolate the home/away division tags
     games_meta = games_df[
         ['game_id', 'season_type', 'home_division', 'away_division',
