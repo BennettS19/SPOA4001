@@ -115,7 +115,7 @@ st.sidebar.dataframe(
 ##############################
 
 # Game ID input
-game_id_input = st.text_input("Game ID", placeholder="e.g. 401756846")
+game_id_input = st.text_input("Game ID", placeholder="e.g. 401756893")
 
 if game_id_input:
     # make sure input is a number
