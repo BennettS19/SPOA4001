@@ -1,0 +1,111 @@
+"""
+testing.py:
+    evaluate the win probability model built in model.py
+    - feature importance summary table + plot
+    - out-of-sample performance metrics
+    - calibration plot
+"""
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.api as sm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, roc_auc_score, log_loss, brier_score_loss
+
+from model import HOME_PREDICTORS, load_data, train_model
+```
+
+```{python}
+# Load data and train model using the same functions app.py relies on
+game_df = load_data()
+model, scaler = train_model(game_df)
+
+# Reproduce the same train/test split train_model() used
+X = game_df[HOME_PREDICTORS]
+y = game_df["home_win"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, random_state=2026
+)
+
+X_test_scaled = pd.DataFrame(
+    scaler.transform(X_test), columns=HOME_PREDICTORS, index=X_test.index
+)
+X_test_sm = sm.add_constant(X_test_scaled, has_constant="add")
+```
+
+```{python}
+# Feature Importance Summary Table
+summary_df = pd.DataFrame({
+    "Predictor": model.params.index,
+    "Std Beta": model.params.values,
+    "Odds Ratio (1 SD)": np.exp(model.params.values),
+    "z-statistic": model.tvalues.values,
+    "p-value": model.pvalues.values
+})
+summary_df = summary_df[summary_df["Predictor"] != "const"].copy()
+summary_df["Importance (|z|)"] = summary_df["z-statistic"].abs()
+summary_df = summary_df.sort_values(by="Importance (|z|)", ascending=False)
+
+print("Feature Importance Summary:")
+print(summary_df.to_string(index=False))
+
+plt.figure(figsize=(9, 5))
+sns.barplot(data=summary_df, x="Importance (|z|)", y="Predictor", palette="mako")
+plt.title("FBS Win Probability: Feature Importance Ranking", fontsize=13, fontweight="bold")
+plt.xlabel("Feature Importance (|z-score|)")
+plt.ylabel("Model Feature")
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+# Out-of-Sample Performance
+pred_probs = model.predict(X_test_sm)
+pred_class = (pred_probs >= 0.5).astype(int)
+
+metrics_df = pd.DataFrame({
+    "Metric": ["Accuracy", "ROC AUC", "Log Loss", "Brier Score"],
+    "Test Score": [
+        accuracy_score(y_test, pred_class),
+        roc_auc_score(y_test, pred_probs),
+        log_loss(y_test, pred_probs),
+        brier_score_loss(y_test, pred_probs)
+    ]
+})
+
+print("\nOut-of-Sample Performance:")
+print(metrics_df.to_string(index=False))
+```
+
+```{python}
+# Calibration Plot
+def plot_overall_calibration(y_true, y_probs, title_suffix=""):
+    df_cal = pd.DataFrame({"actual": y_true, "pred": y_probs})
+    df_cal["prob_bin"] = pd.cut(df_cal["pred"], bins=np.linspace(0, 1, 11), include_lowest=True)
+
+    agg = df_cal.groupby("prob_bin", observed=False).agg(
+        mean_pred=("pred", "mean"),
+        actual_win_rate=("actual", "mean"),
+        game_count=("actual", "count")
+    ).reset_index().dropna()
+
+    plt.figure(figsize=(8, 6))
+    plt.plot([0, 1], [0, 1], "r--", linewidth=1.5, label="Perfect Calibration")
+    plt.plot(agg["mean_pred"], agg["actual_win_rate"], "o-", color="royalblue", linewidth=2)
+    plt.scatter(agg["mean_pred"], agg["actual_win_rate"], s=agg["game_count"] * 0.8, color="royalblue", alpha=0.7)
+    plt.xlim(0, 1)
+    plt.ylim(0, 1)
+    plt.xlabel("Mean Predicted Win Probability", fontweight="bold")
+    plt.ylabel("Observed Win Rate", fontweight="bold")
+    plt.title(f"Overall Win Probability Calibration {title_suffix}", fontsize=13, fontweight="bold")
+    plt.grid(True, linestyle=":", alpha=0.6)
+    plt.tight_layout()
+    plt.show()
+
+
+plot_overall_calibration(y_test, pred_probs, "(Differentials Model)")
+```
