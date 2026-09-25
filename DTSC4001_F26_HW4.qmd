@@ -1,0 +1,32 @@
+---
+title: "DTSC4001_HW4"
+author: "Schuckers"
+format: html
+editor: visual
+---
+
+## Homework Due 9/25/26 7p
+
+For the assignment below, you'll make a couple of models and assess them. Be sure to tell me what file I am supposed to look at and how I am to run the code. Hint: don't store the data on github.
+
+### All students:
+
+1.  \[30 points\] Build three models for FBS team evaluation: an SRS model of score differential and home/away only, an opponent adjusted game control model, and an opponent adjusted average win probability (awp) model. Be sure to have an effect for the home team in each model. Give the top 10 and botton 10 teams for each season from 2021 to 2025.
+
+2.  \[20 points\] Assess which of the models has the best predictive out of sample performance by splitting each season into train and test sets. Explain why your choice of split(s) is appropriate.
+
+3.  \[20 points\] Assess which of the models has the best repeatbility by splitting each season into train and test sets. Explain why your choice of split(s) is appropriate
+
+2\.
+
+SRS is the best predictor for out of sample performance in every metric, holding an accuracy of 0.73. Adj_AWP is a close second at 0.71, with Adj_GC lagging further behind at 0.64. Beyond accuracy, this order carries on the roc_auc, log_lass, and brier score. I split the data chronologically. The early weeks were used to train the model, with the later weeks used to test the model. I could have split the data randomly, but I felt that since we are building team rankings, it would be more realistic to predict a team's ranking near the end of the season based on how they performed early on. This was done at a 70% training split.
+
+3\.
+
+SRS once again performed the best in the repeatability measure, with an r value of .63. Correlation through game control was extremely poor, at an r-value of 0.18. While SRS and AWP perform similarly well between the first and second halves of seasons, teams didn't seem to be able to control games at the same rate, leading to such a poor r-value for the game control model.
+
+I split this data by at the median of the season (H1= week 1-8, H2= week 9-15). This split allows for measuring if the model can carry over results in different parts of the season with a similar game amount. For measuring repeatability there was no other clear split that felt reasonable.
+
+This order mimicked the order of results within the out-of-sample comparison, providing a rather clear evaluation for best model:
+
+1\. SRS, 2. Adj-AWP, 3. Adj-GC.
