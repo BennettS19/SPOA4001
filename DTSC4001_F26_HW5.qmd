@@ -19,6 +19,13 @@ For each part of the assignment below, provide a link to a file on your github s
 2.  \[40 points\] Create an animation of play *2735* from game *2022100210*. Store the animation as a *.gif* file. Note that there is plenty of public code for making these animations. Cite any sources that you use.
 
 ```{python}
+"""
+Code to find the score mistake in games2.csv between LAC & DEN week 6
+
+Output:
+Original Score: 19 - 16
+New Score: 21 - 17
+"""
 import pandas as pd
 
 games_orig = pd.read_csv("data/BigDataBowl_2024/games.csv")
@@ -49,6 +56,10 @@ print(f"New score: {new_lac_den_6['homeFinalScore'].iloc[0]} - "
 """
 Used https://www.kaggle.com/code/dariussingh/nfl-visualizing-player-tracking-data
 to help animate play
+
+Code to animate play 2735 from game 2022100210
+
+Output in play.gif
 """
 
 import numpy as np

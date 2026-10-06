@@ -1,6 +1,10 @@
 """
 Used https://www.kaggle.com/code/dariussingh/nfl-visualizing-player-tracking-data
 to help animate play
+
+Code to animate play 2735 from game 2022100210
+
+Output in play.gif
 """
 
 import numpy as np

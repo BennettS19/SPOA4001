@@ -1,3 +1,10 @@
+"""
+Code to find the score mistake in games2.csv between LAC & DEN week 6
+
+Output:
+Original Score: 19 - 16
+New Score: 21 - 17
+"""
 import pandas as pd
 
 games_orig = pd.read_csv("data/BigDataBowl_2024/games.csv")
